@@ -5,6 +5,7 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+/ARM Assembler.iml
 # Package Files #
 *.jar
 *.war

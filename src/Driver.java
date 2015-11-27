@@ -1,5 +1,6 @@
 import lexer.Lexer;
 import lexer.TokenStream;
+import lexer.UnknownSymbolException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +21,8 @@ public class Driver {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (UnknownSymbolException e) {
             e.printStackTrace();
         }
     }
