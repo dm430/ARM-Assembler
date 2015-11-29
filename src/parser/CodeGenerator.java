@@ -1,5 +1,7 @@
 package parser;
 
+import parser.exceptions.EncodingException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +9,8 @@ import java.util.List;
  * Created by devin on 11/28/15.
  */
 public class CodeGenerator {
+    private static final String BRANCH_OPCODE = "A";
+
     public enum ConditionCode {
         EQUAL(""), NOT_EQUAL(""), LESS_THAN(""),
         LESS_THAN_EQUAL(""), GRATER_THAN(""),
@@ -32,8 +36,23 @@ public class CodeGenerator {
     }
 
     public void generateBranch(ConditionCode conditionCode, int address) {
-        // TODO:   
 
+        currentAddress++;
+    }
+
+    public void generateBranchImmediate(ConditionCode conditionCode, int numberToJump) throws EncodingException {
+        if ((31 - Integer.numberOfLeadingZeros(numberToJump)) > 24) {
+            throw new EncodingException("The number " + numberToJump + " does not fit into 24 bits.");
+        }
+
+        StringBuilder instruction = new StringBuilder();
+        String immediateValue = Integer.toHexString(numberToJump);
+
+        instruction.append(conditionCode);
+        instruction.append(BRANCH_OPCODE);
+        instruction.append(immediateValue);
+
+        program.add(instruction.toString());
         currentAddress++;
     }
 

@@ -3,6 +3,7 @@ package parser;
 import lexer.Token;
 import lexer.TokenStream;
 import lexer.Token.TokenType;
+import parser.exceptions.EncodingException;
 import parser.exceptions.SyntaxErrorException;
 import parser.CodeGenerator.ConditionCode;
 
@@ -23,18 +24,18 @@ public class Parser {
         this.codeGenerator = new CodeGenerator();
     }
 
-    public void parse(TokenStream tokenStream) throws SyntaxErrorException {
+    public void parse(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
         while (tokenStream.hasNext()) {
             parseInstruction(tokenStream);
         }
     }
 
-    private void parseInstruction(TokenStream tokenStream) throws SyntaxErrorException {
+    private void parseInstruction(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
         tryParseLabel(tokenStream);
         parseOperation(tokenStream);
     }
 
-    private void parseOperation(TokenStream tokenStream) throws SyntaxErrorException {
+    private void parseOperation(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
         Token token = tokenStream.peek();
 
         if (startsWith(token, "B")) {
@@ -49,14 +50,19 @@ public class Parser {
     }
 
     private void parseDataProcess(TokenStream tokenStream) {
-
     }
 
     private void parseLdrStr(TokenStream tokenStream) {
+        Token token = tokenStream.peek();
 
+        if (startsWith(token, "LDR")) {
+            
+        } else if (startsWith(token, "STR")) {
+
+        }
     }
 
-    private void parseBranch(TokenStream tokenStream) {
+    private void parseBranch(TokenStream tokenStream) throws EncodingException {
         Token branch = tokenStream.next();
         Token branchTo = tokenStream.next();
 
@@ -64,7 +70,8 @@ public class Parser {
             ConditionCode conditionCode = getConditionCode(branch);
 
             if (isTokenType(branchTo, TokenType.NUMBER)) {
-
+                int numberToJump = Integer.getInteger(branchTo.getLexeme());
+                codeGenerator.generateBranchImmediate(conditionCode, numberToJump);
             } else if (isTokenType(branch, TokenType.WORD)) {
                 String word = branchTo.getLexeme();
                 int address =  symbolTable.get(word);
