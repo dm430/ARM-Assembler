@@ -1,5 +1,7 @@
 package lexer;
 
+import lexer.exceptions.EndOfTokenStreamException;
+
 import java.util.List;
 
 /**
@@ -25,11 +27,27 @@ public class TokenStream {
         return tokens.get(index++);
     }
 
-    public Token Previous() {
+    public Token previous() {
         if (index <= 0) {
             throw new EndOfTokenStreamException("Attempted to get token at index " + (index - 1));
         }
 
         return tokens.get(--index);
+    }
+
+    public Token peek() {
+        if (!hasNext()) {
+            throw new EndOfTokenStreamException();
+        }
+
+        return tokens.get(index + 1);
+    }
+
+    public void reverseStream(int numberToReverseBy) {
+        if (index - numberToReverseBy < 0) {
+            index = 0;
+        } else {
+            index -= numberToReverseBy;
+        }
     }
 }

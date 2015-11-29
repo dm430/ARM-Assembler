@@ -1,4 +1,4 @@
-package lexer;
+package lexer.exceptions;
 
 /**
  * Created by devin on 11/25/15.

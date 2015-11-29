@@ -4,8 +4,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.org.apache.bcel.internal.classfile.Unknown;
 import lexer.Token.TokenType;
+import lexer.exceptions.UnknownSymbolException;
 
 /**
  * Created by devin on 11/25/15.
@@ -32,6 +32,10 @@ public class Lexer {
                 case ',':
                     String charValue = String.valueOf(input.read());
                     tokens.add(new Token(charValue, TokenType.COMMA));
+                    break;
+                case ':':
+                    charValue = String.valueOf(input.read());
+                    tokens.add(new Token(charValue, TokenType.COLON));
                     break;
                 case '#':
                     readInlineComment();

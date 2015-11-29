@@ -1,6 +1,6 @@
 import lexer.Lexer;
 import lexer.TokenStream;
-import lexer.UnknownSymbolException;
+import lexer.exceptions.UnknownSymbolException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
