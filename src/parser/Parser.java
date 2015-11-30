@@ -49,11 +49,69 @@ public class Parser {
         }
     }
 
-    private void parseDataProcess(TokenStream tokenStream) {
+    private void parseDataProcess(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
+        Token instruction = tokenStream.peek();
+
+        if (startsWith(instruction, "AND", "ORR", "ADD", "SUB")) {
+            if (startsWith(instruction, "AND")) {
+                codeGenerator.generateAnd(instruction);
+            } else if (startsWith(instruction, "ORR")) {
+                codeGenerator.generateOrr(instruction);
+            } else if (startsWith(instruction, "ADD")) {
+                codeGenerator.generateAdd(instruction);
+            } else if (startsWith(instruction, "SUB")) {
+                codeGenerator.generateSub(instruction);
+            }
+
+            parseLogicParameters(tokenStream);
+        } else if (startsWith(instruction, "MOVW", "MOVT")) {
+            if (startsWith(instruction, "MOVW")) {
+                codeGenerator.generateMovw(instruction);
+            } else if (startsWith(instruction, "MOVT")) {
+                codeGenerator.generateMovt(instruction);
+            }
+
+            parseMovParameters(tokenStream);
+        } else if (startsWith(instruction, "CMP")) {
+            codeGenerator.generateCmp(instruction);
+            parseCmpParameters(tokenStream);
+        } else {
+            throw new SyntaxErrorException();
+        }
     }
 
-    private void parseLdrStr(TokenStream tokenStream) throws SyntaxErrorException {
-        Token instruction = tokenStream.next();
+    private void parseCmpParameters(TokenStream tokenStream) {
+        // TODO: 11/30/15
+    }
+
+    private void parseMovParameters(TokenStream tokenStream) {
+        Token token = tokenStream.next();
+
+        if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
+            Token destinationRegister = tokenStream.next();
+            Token comma = tokenStream.next();
+            Token value = tokenStream.next();
+
+            if (isTokenType(destinationRegister, TokenType.WORD)
+                    && startsWith(destinationRegister, "R")
+                    && isTokenType(comma, TokenType.COMMA)
+                    && (isTokenType(value, TokenType.NUMBER)
+                    || isTokenType(value, TokenType.HEX_NUMBER))) {
+                codeGenerator.generateMovImmediateParameters(destinationRegister, value);
+            }
+        }
+    }
+
+    private void parseLogicParameters(TokenStream tokenStream) throws EncodingException {
+        Token token = tokenStream.next();
+
+        if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
+            parseRegistersImmediate12Bits(tokenStream);
+        }
+    }
+
+    private void parseLdrStr(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
+        Token instruction = tokenStream.peek();
 
         if (startsWith(instruction, "LDR")) {
             ConditionCode conditionCode = getConditionCode(instruction);
@@ -65,33 +123,35 @@ public class Parser {
             throw new SyntaxErrorException();
         }
 
-        /*
-         * Im not super sure that I like this way
-         * but im not really sure how to do this...
-         */
+        // Generates the remaining part of the instruction
         parseLdrStrParameters(tokenStream);
     }
 
-    private void parseLdrStrParameters(TokenStream tokenStream) {
+    private void parseLdrStrParameters(TokenStream tokenStream) throws EncodingException {
         Token token = tokenStream.next();
 
-        if (isTokenType(token, TokenType.WORD) && startsWith(token, "I")) {
-            Token destinationRegister = tokenStream.next();
-            Token comma = tokenStream.next();
-            Token baseRegister = tokenStream.next();
-            Token comma2 = tokenStream.next();
-            Token offset = tokenStream.next();
+        if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
+            parseRegistersImmediate12Bits(tokenStream);
+        }
+    }
 
-            if (isTokenType(destinationRegister, TokenType.WORD)
-                    && startsWith(destinationRegister, "R")
-                    && isTokenType(comma, TokenType.COMMA)
-                    && isTokenType(baseRegister, TokenType.WORD)
-                    && startsWith(baseRegister, "R")
-                    && isTokenType(comma2, TokenType.COMMA)
-                    && (isTokenType(offset, TokenType.NUMBER)
-                    || isTokenType(offset, TokenType.HEX_NUMBER))) {
-                codeGenerator.generateLdrStrParametersImmediate(destinationRegister, baseRegister, offset);
-            }
+    // This is a bad name. Im having a naming issues
+    private void parseRegistersImmediate12Bits(TokenStream tokenStream) throws EncodingException {
+        Token destinationRegister = tokenStream.next();
+        Token comma = tokenStream.next();
+        Token baseRegister = tokenStream.next();
+        Token comma2 = tokenStream.next();
+        Token offset = tokenStream.next();
+
+        if (isTokenType(destinationRegister, TokenType.WORD)
+                && startsWith(destinationRegister, "R")
+                && isTokenType(comma, TokenType.COMMA)
+                && isTokenType(baseRegister, TokenType.WORD)
+                && startsWith(baseRegister, "R")
+                && isTokenType(comma2, TokenType.COMMA)
+                && (isTokenType(offset, TokenType.NUMBER)
+                || isTokenType(offset, TokenType.HEX_NUMBER))) {
+            codeGenerator.generateRegistersImmediate12BitsParameters(destinationRegister, baseRegister, offset);
         }
     }
 
@@ -129,5 +189,3 @@ public class Parser {
         }
     }
 }
-
-

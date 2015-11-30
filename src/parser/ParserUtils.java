@@ -9,6 +9,9 @@ import parser.CodeGenerator.ConditionCode;
  * Created by devin on 11/28/15.
  */
 public class ParserUtils {
+
+    public static final String REGISTER_PREFIX = "R";
+
     public static boolean startsWith(Token token, String... prefixes) {
         boolean startsWith = false;
         String lexeme = token.getLexeme().toUpperCase();
@@ -53,5 +56,12 @@ public class ParserUtils {
         }
 
         return conditionCode;
+    }
+
+    public static int getRegisterNumber(Token register) {
+        String lexeme = register.getLexeme().toUpperCase();
+        lexeme = lexeme.substring(REGISTER_PREFIX.length());
+
+        return Integer.parseInt(lexeme);
     }
 }

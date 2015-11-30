@@ -27,15 +27,11 @@ public class TokenStream {
         return tokens.get(index++);
     }
 
-    public Token previous() {
-        if (index <= 0) {
-            throw new EndOfTokenStreamException("Attempted to get token at index " + (index - 1));
-        }
-
-        return tokens.get(--index);
+    public Token peek() {
+        return tokens.get(index);
     }
 
-    public Token peek() {
+    public Token peekNext() {
         if (!hasNext()) {
             throw new EndOfTokenStreamException();
         }
