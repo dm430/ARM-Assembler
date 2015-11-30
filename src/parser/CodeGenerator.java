@@ -1,5 +1,6 @@
 package parser;
 
+import lexer.Token;
 import parser.exceptions.EncodingException;
 
 import java.util.ArrayList;
@@ -9,7 +10,8 @@ import java.util.List;
  * Created by devin on 11/28/15.
  */
 public class CodeGenerator {
-    private static final String BRANCH_OPCODE = "A";
+
+    public static final String BRANCH_IMMEDIATE_CODE = "A";
 
     public enum ConditionCode {
         EQUAL(""), NOT_EQUAL(""), LESS_THAN(""),
@@ -30,9 +32,11 @@ public class CodeGenerator {
 
     private List<String> program;
     private int currentAddress;
+    private StringBuilder instruction;
 
     public CodeGenerator() {
         this.program = new ArrayList<>();
+        this.instruction = new StringBuilder();
     }
 
     public void generateBranch(ConditionCode conditionCode, int address) {
@@ -45,15 +49,28 @@ public class CodeGenerator {
             throw new EncodingException("The number " + numberToJump + " does not fit into 24 bits.");
         }
 
-        StringBuilder instruction = new StringBuilder();
         String immediateValue = Integer.toHexString(numberToJump);
 
         instruction.append(conditionCode);
-        instruction.append(BRANCH_OPCODE);
+        instruction.append(BRANCH_IMMEDIATE_CODE);
         instruction.append(immediateValue);
 
+        writeInstruction();
+    }
+
+    private void writeInstruction() {
         program.add(instruction.toString());
+        instruction.setLength(0);
         currentAddress++;
+    }
+
+    public void generateLdrStrParametersImmediate(Token destinationRegister, Token baseRegister, Token offset) {
+    }
+
+    public void generateStr(ConditionCode conditionCode) {
+    }
+
+    public void generateLdr(ConditionCode conditionCode) {
     }
 
     public int getCurrentAddress() {

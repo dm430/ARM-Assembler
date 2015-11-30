@@ -40,6 +40,14 @@ public class Lexer {
                 case '#':
                     readInlineComment();
                     break;
+                case '[':
+                    charValue = String.valueOf(input.read());
+                    tokens.add(new Token(charValue, TokenType.LEFT_BRACKET));
+                    break;
+                case ']':
+                    charValue = String.valueOf(input.read());
+                    tokens.add(new Token(charValue, TokenType.RIGHT_BRACKET));
+                    break;
                 default:
                     if (Character.isLetter(currentChar)) {
                         tokens.add(readWord());
@@ -91,7 +99,7 @@ public class Lexer {
 
     private boolean isHexDigit(char value) {
         char charAsUpper = Character.toUpperCase(value);
-        return  charAsUpper >= 'A' && value <= 'F';
+        return charAsUpper >= 'A' && value <= 'F';
     }
 
     private void readInlineComment() throws IOException {
@@ -109,7 +117,7 @@ public class Lexer {
     private Token readWord() throws IOException {
         builder.setLength(0);
 
-        while (Character.isLetter(input.peek())) {
+        while (Character.isLetter(input.peek()) || Character.isDigit(input.peek())) {
             builder.append(input.read());
         }
         String lexeme = builder.toString();
