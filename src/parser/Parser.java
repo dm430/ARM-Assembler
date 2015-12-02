@@ -120,7 +120,7 @@ public class Parser {
         Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
-            parseRegistersImmediate12Bits(tokenStream);
+            // TODO: This needs to have its own parsing due too modified imm12 values.
         }
     }
 
@@ -145,27 +145,22 @@ public class Parser {
         Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
-            parseRegistersImmediate12Bits(tokenStream);
-        }
-    }
+            Token destinationRegister = tokenStream.next();
+            Token comma = tokenStream.next();
+            Token baseRegister = tokenStream.next();
+            Token comma2 = tokenStream.next();
+            Token offset = tokenStream.next();
 
-    // This is a bad name. Im having a naming issues
-    private void parseRegistersImmediate12Bits(TokenStream tokenStream) throws EncodingException {
-        Token destinationRegister = tokenStream.next();
-        Token comma = tokenStream.next();
-        Token baseRegister = tokenStream.next();
-        Token comma2 = tokenStream.next();
-        Token offset = tokenStream.next();
-
-        if (isTokenType(destinationRegister, TokenType.WORD)
-                && startsWith(destinationRegister, "R")
-                && isTokenType(comma, TokenType.COMMA)
-                && isTokenType(baseRegister, TokenType.WORD)
-                && startsWith(baseRegister, "R")
-                && isTokenType(comma2, TokenType.COMMA)
-                && (isTokenType(offset, TokenType.NUMBER)
-                || isTokenType(offset, TokenType.HEX_NUMBER))) {
-            codeGenerator.generateRegistersImmediate12BitsParameters(destinationRegister, baseRegister, offset);
+            if (isTokenType(destinationRegister, TokenType.WORD)
+                    && startsWith(destinationRegister, "R")
+                    && isTokenType(comma, TokenType.COMMA)
+                    && isTokenType(baseRegister, TokenType.WORD)
+                    && startsWith(baseRegister, "R")
+                    && isTokenType(comma2, TokenType.COMMA)
+                    && (isTokenType(offset, TokenType.NUMBER)
+                    || isTokenType(offset, TokenType.HEX_NUMBER))) {
+                codeGenerator.generateRegistersImmediate12BitsParameters(destinationRegister, baseRegister, offset);
+            }
         }
     }
 

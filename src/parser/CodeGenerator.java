@@ -80,7 +80,8 @@ public class CodeGenerator {
     public void generateRegistersImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {
         int base = getRegisterNumber(baseRegister);
         int destination = getRegisterNumber(destinationRegister);
-        int baseOffset =  Integer.parseInt(offset.getLexeme());
+        int baseOffset = (startsWith(offset, "0x"))
+                ? Integer.parseInt(offset.getLexeme().substring(2), 16) : Integer.parseInt(offset.getLexeme());
 
         if ((INSTRUCTION_SIZE - Integer.numberOfLeadingZeros(base)) > MAX_REGISTERS) {
             throw new EncodingException(base + " is not a valid register number");
@@ -162,7 +163,8 @@ public class CodeGenerator {
 
     public void generateMovImmediateParameters(Token destinationRegister, Token value) throws EncodingException {
         int register = getRegisterNumber(destinationRegister);
-        int immediateValue = Integer.parseInt(value.getLexeme());
+        int immediateValue = (startsWith(value, "0x"))
+                ? Integer.parseInt(value.getLexeme().substring(2), 16) : Integer.parseInt(value.getLexeme());
 
         if ((INSTRUCTION_SIZE - Integer.numberOfLeadingZeros(register)) > MAX_REGISTERS) {
             throw new EncodingException(register + " is not a valid register number");
@@ -172,7 +174,13 @@ public class CodeGenerator {
             throw new EncodingException("The number " + immediateValue + " does not fit into 12 bits.");
         }
 
-        // TODO: finish this
+        String hexValue = toHexString(immediateValue, 16);
+
+        instruction.append(hexValue.subSequence(0, 1));
+        instruction.append(register);
+        instruction.append(hexValue.substring(1));
+
+        writeInstruction();
     }
 
     public void generateCmpParametersImmediate(Token register, Token value) throws EncodingException {
