@@ -80,11 +80,25 @@ public class Parser {
         }
     }
 
-    private void parseCmpParameters(TokenStream tokenStream) {
-        // TODO: 11/30/15
+    private void parseCmpParameters(TokenStream tokenStream) throws EncodingException {
+        Token instruction = tokenStream.next();
+
+        if (isTokenType(instruction, TokenType.WORD) && endsWith(instruction, "I")) {
+            Token register = tokenStream.next();
+            Token comma = tokenStream.next();
+            Token value = tokenStream.next();
+
+            if (isTokenType(register, TokenType.WORD)
+                    && startsWith(register, "R")
+                    && isTokenType(comma, TokenType.COMMA)
+                    && (isTokenType(value, TokenType.NUMBER)
+                    || isTokenType(value, TokenType.HEX_NUMBER))) {
+                codeGenerator.generateCmpParametersImmediate(register, value);
+            }
+        }
     }
 
-    private void parseMovParameters(TokenStream tokenStream) {
+    private void parseMovParameters(TokenStream tokenStream) throws EncodingException {
         Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
