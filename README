@@ -1,0 +1,3 @@
+    This is a ARM assembler that has a simpler syntax than the one defined in the ARM architectural manual. This project is still heavily under construction and most of the instructions are not
+supported yet how ever it will slowly get there. The syntax of the assembly language is still under heavy revision and may change from version to version. I will document the the syntax of the
+language and its usages in this readme.
