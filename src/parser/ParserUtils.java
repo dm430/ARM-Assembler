@@ -4,6 +4,7 @@ import lexer.Token;
 import lexer.Token.TokenType;
 
 import parser.CodeGenerator.ConditionCode;
+import parser.exceptions.EncodingException;
 
 /**
  * Created by devin on 11/28/15.
@@ -75,7 +76,7 @@ public class ParserUtils {
         return builder.toString();
     }
 
-    public static String reverseEndianess(String hex) {
+    public static String reverseEndianness(String hex) {
         StringBuilder hexString = new StringBuilder();
 
         if (hex.length() % 2 != 0) {
@@ -94,5 +95,25 @@ public class ParserUtils {
         lexeme = lexeme.substring(REGISTER_PREFIX.length());
 
         return Integer.parseInt(lexeme);
+    }
+
+    public static String encodeModifiedImmediate(int immediateValue) throws EncodingException {
+        String encodedValue = new String();
+        boolean notCalculated = true;
+
+        for (int rotate = 0; rotate < 32 && notCalculated; rotate += 2) {
+            if ((immediateValue & ~0xFF) == 0) {
+                encodedValue = toHexString(rotate / 2, 4) + toHexString(immediateValue, 8);
+                notCalculated = false;
+            }
+
+            immediateValue = (immediateValue << 2) | (immediateValue >>> 30);
+        }
+
+        if (encodedValue.isEmpty()) {
+            throw new EncodingException("The constant is too wide");
+        }
+
+        return encodedValue;
     }
 }

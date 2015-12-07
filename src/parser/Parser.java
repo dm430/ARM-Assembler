@@ -28,6 +28,8 @@ public class Parser {
         while (tokenStream.hasNext()) {
             parseInstruction(tokenStream);
         }
+
+        codeGenerator.getProgram().forEach(x -> System.out.println(x));
     }
 
     private void parseInstruction(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
@@ -80,7 +82,7 @@ public class Parser {
         }
     }
 
-    private void parseCmpParameters(TokenStream tokenStream) throws EncodingException {
+    private void parseCmpParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
         Token instruction = tokenStream.next();
 
         if (isTokenType(instruction, TokenType.WORD) && endsWith(instruction, "I")) {
@@ -94,11 +96,15 @@ public class Parser {
                     && (isTokenType(value, TokenType.NUMBER)
                     || isTokenType(value, TokenType.HEX_NUMBER))) {
                 codeGenerator.generateCmpParametersImmediate(register, value);
+            } else {
+                throw new SyntaxErrorException();
             }
+        } else {
+            throw new SyntaxErrorException();
         }
     }
 
-    private void parseMovParameters(TokenStream tokenStream) throws EncodingException {
+    private void parseMovParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
         Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
@@ -112,15 +118,38 @@ public class Parser {
                     && (isTokenType(value, TokenType.NUMBER)
                     || isTokenType(value, TokenType.HEX_NUMBER))) {
                 codeGenerator.generateMovImmediateParameters(destinationRegister, value);
+            } else {
+                throw new SyntaxErrorException();
             }
+        } else {
+            throw new SyntaxErrorException();
         }
     }
 
-    private void parseLogicParameters(TokenStream tokenStream) throws EncodingException {
+    private void parseLogicParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
         Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
-            // TODO: This needs to have its own parsing due too modified imm12 values.
+            Token destinationRegister = tokenStream.next();
+            Token comma = tokenStream.next();
+            Token baseRegister = tokenStream.next();
+            Token comma2 = tokenStream.next();
+            Token value = tokenStream.next();
+
+            if (isTokenType(destinationRegister, TokenType.WORD)
+                    && startsWith(destinationRegister, "R")
+                    && isTokenType(comma, TokenType.COMMA)
+                    && isTokenType(baseRegister, TokenType.WORD)
+                    && startsWith(baseRegister, "R")
+                    && isTokenType(comma2, TokenType.COMMA)
+                    && (isTokenType(value, TokenType.NUMBER)
+                    || isTokenType(value, TokenType.HEX_NUMBER))) {
+                codeGenerator.generateLogicImmediate12BitsParameters(destinationRegister, baseRegister, value);
+            } else {
+                throw new SyntaxErrorException();
+            }
+        } else {
+            throw new SyntaxErrorException();
         }
     }
 
@@ -141,7 +170,7 @@ public class Parser {
         parseLdrStrParameters(tokenStream);
     }
 
-    private void parseLdrStrParameters(TokenStream tokenStream) throws EncodingException {
+    private void parseLdrStrParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
         Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
@@ -160,7 +189,11 @@ public class Parser {
                     && (isTokenType(offset, TokenType.NUMBER)
                     || isTokenType(offset, TokenType.HEX_NUMBER))) {
                 codeGenerator.generateRegistersImmediate12BitsParameters(destinationRegister, baseRegister, offset);
+            } else {
+                throw new SyntaxErrorException();
             }
+        } else {
+            throw new SyntaxErrorException();
         }
     }
 
@@ -171,10 +204,11 @@ public class Parser {
         if (isTokenType(branch, TokenType.WORD)) {
             ConditionCode conditionCode = getConditionCode(branch);
 
-            if (isTokenType(branchTo, TokenType.NUMBER)) {
+            // TODO: This has a null pinter that doesn't make sense...
+            if (isTokenType(branchTo, TokenType.NUMBER) || isTokenType(branchTo, TokenType.HEX_NUMBER)) {
                 int numberToJump = Integer.getInteger(branchTo.getLexeme());
                 codeGenerator.generateBranchImmediate(conditionCode, numberToJump);
-            } else if (isTokenType(branch, TokenType.WORD)) {
+            } else if (isTokenType(branchTo, TokenType.WORD)) {
                 String word = branchTo.getLexeme();
                 int address = symbolTable.get(word);
                 codeGenerator.generateBranch(conditionCode, address);

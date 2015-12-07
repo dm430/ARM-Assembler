@@ -25,7 +25,7 @@ public class CodeGenerator {
     public static final String SUB_CODE = "25";
     public static final String MOV_CODE = "30";
     public static final String MOVT_CODE = "34";
-
+    
     public enum ConditionCode {
         EQUAL(""), NOT_EQUAL("tree"), LESS_THAN(""),
         LESS_THAN_EQUAL(""), GRATER_THAN(""),
@@ -71,7 +71,7 @@ public class CodeGenerator {
     }
 
     private void writeInstruction() {
-        String littleEndian = reverseEndianess(instruction.toString());
+        String littleEndian = instruction.toString(); //reverseEndianness(instruction.toString());
         program.add(littleEndian);
         instruction.setLength(0);
         currentAddress++;
@@ -202,7 +202,34 @@ public class CodeGenerator {
         writeInstruction();
     }
 
+    public void generateLogicImmediate12BitsParameters(Token destinationRegister, Token operandRegister, Token offset) throws EncodingException {
+        int destRegister = getRegisterNumber(destinationRegister);
+        int opRegister = getRegisterNumber(operandRegister);
+        int immediateValue = (startsWith(offset, "0x"))
+                ? Integer.parseInt(offset.getLexeme().substring(2), 16) : Integer.parseInt(offset.getLexeme());
+
+        if ((INSTRUCTION_SIZE - Integer.numberOfLeadingZeros(destRegister)) > MAX_REGISTERS) {
+            throw new EncodingException(destinationRegister + " is not a valid register number");
+        }
+
+        if ((INSTRUCTION_SIZE - Integer.numberOfLeadingZeros(opRegister)) > MAX_REGISTERS) {
+            throw new EncodingException(opRegister + " is not a valid register number");
+        }
+
+        String encodedValue = encodeModifiedImmediate(immediateValue);
+
+        instruction.append(toHexString(opRegister, 4));
+        instruction.append(toHexString(destRegister, 4));
+        instruction.append(encodedValue);
+
+        writeInstruction();
+    }
+
     public int getCurrentAddress() {
         return currentAddress;
+    }
+
+    public List<String> getProgram() {
+        return program;
     }
 }
