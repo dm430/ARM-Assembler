@@ -27,7 +27,7 @@ public class CodeGenerator {
     public static final String MOVT_CODE = "34";
     
     public enum ConditionCode {
-        EQUAL(""), NOT_EQUAL("tree"), LESS_THAN(""),
+        EQUAL(""), NOT_EQUAL("1"), LESS_THAN(""),
         LESS_THAN_EQUAL(""), GRATER_THAN(""),
         GREATER_THAN_EQUAL(""), ALWAYS("E");
 
@@ -52,26 +52,41 @@ public class CodeGenerator {
         this.instruction = new StringBuilder();
     }
 
-    public void generateBranch(ConditionCode conditionCode, int address) {
+    public void generateBranch(Token instruction, int address) {
+        ConditionCode conditionCode = getConditionCode(instruction);
 
+        // TODO: change -1 to value, double pass?
+        int calculatedAddress = (currentAddress > address) ? address - (currentAddress + 2) : -1;
+        String immediateValue = toHexString(calculatedAddress, 24);
+
+        this.instruction.append(conditionCode);
+        this.instruction.append(BRANCH_IMMEDIATE_CODE);
+        this.instruction.append(immediateValue);
+
+        writeInstruction();
     }
 
-    public void generateBranchImmediate(ConditionCode conditionCode, int numberToJump) throws EncodingException {
-        if ((31 - Integer.numberOfLeadingZeros(numberToJump)) > 24) {
-            throw new EncodingException("The number " + numberToJump + " does not fit into 24 bits.");
+    public void generateBranchImmediate(Token instruction,  Token branchTo) throws EncodingException {
+        ConditionCode conditionCode = getConditionCode(instruction);
+        int branchValue = startsWith(branchTo, "0x")
+            ? Integer.parseInt(branchTo.getLexeme().substring(2), 16) : Integer.parseInt(branchTo.getLexeme());
+
+        if ((31 - Integer.numberOfLeadingZeros(branchValue)) > 24) {
+            throw new EncodingException("The number " + branchTo + " does not fit into 24 bits.");
         }
 
-        String immediateValue = Integer.toHexString(numberToJump);
+        String immediateValue = toHexString(branchValue, 24);
 
-        instruction.append(conditionCode);
-        instruction.append(BRANCH_IMMEDIATE_CODE);
-        instruction.append(immediateValue);
+        this.instruction.append(conditionCode);
+        this.instruction.append(BRANCH_IMMEDIATE_CODE);
+        this.instruction.append(immediateValue);
 
         writeInstruction();
     }
 
     private void writeInstruction() {
-        String littleEndian = instruction.toString(); //reverseEndianness(instruction.toString());
+        System.out.println(instruction.toString());
+        String littleEndian = reverseEndianness(instruction.toString());
         program.add(littleEndian);
         instruction.setLength(0);
         currentAddress++;
@@ -230,6 +245,20 @@ public class CodeGenerator {
     }
 
     public List<String> getProgram() {
+        return program;
+    }
+
+    public byte[] generateProgram() {
+        StringBuilder programBuilder = new StringBuilder();
+        this.program.forEach(instruction -> programBuilder.append(instruction));
+
+        byte[] program = new byte[programBuilder.toString().length() / 2];
+        for (int i = 0; i < program.length; i++) {
+            int index = i * 2;
+            int value = Integer.parseInt(programBuilder.toString().substring(index, index + 2), 16);
+            program[i] = (byte) value;
+        }
+
         return program;
     }
 }

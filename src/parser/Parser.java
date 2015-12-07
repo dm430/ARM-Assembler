@@ -24,12 +24,12 @@ public class Parser {
         this.codeGenerator = new CodeGenerator();
     }
 
-    public void parse(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
+    public byte[] parse(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
         while (tokenStream.hasNext()) {
             parseInstruction(tokenStream);
         }
 
-        codeGenerator.getProgram().forEach(x -> System.out.println(x));
+        return codeGenerator.generateProgram();
     }
 
     private void parseInstruction(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
@@ -202,16 +202,12 @@ public class Parser {
         Token branchTo = tokenStream.next();
 
         if (isTokenType(branch, TokenType.WORD)) {
-            ConditionCode conditionCode = getConditionCode(branch);
-
-            // TODO: This has a null pinter that doesn't make sense...
             if (isTokenType(branchTo, TokenType.NUMBER) || isTokenType(branchTo, TokenType.HEX_NUMBER)) {
-                int numberToJump = Integer.getInteger(branchTo.getLexeme());
-                codeGenerator.generateBranchImmediate(conditionCode, numberToJump);
+                codeGenerator.generateBranchImmediate(branch, branchTo);
             } else if (isTokenType(branchTo, TokenType.WORD)) {
                 String word = branchTo.getLexeme();
                 int address = symbolTable.get(word);
-                codeGenerator.generateBranch(conditionCode, address);
+                codeGenerator.generateBranch(branch, address);
             } else {
                 throw new SyntaxErrorException();
             }
@@ -226,7 +222,7 @@ public class Parser {
 
         if (label.getTokenType() == Token.TokenType.WORD
                 && colon.getTokenType() == Token.TokenType.COLON) {
-            // TODO: think about this
+            symbolTable.put(label.getLexeme(), codeGenerator.getCurrentAddress());
         } else {
             tokenStream.reverseStream(2);
         }

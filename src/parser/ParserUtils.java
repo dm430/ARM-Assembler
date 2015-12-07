@@ -64,6 +64,12 @@ public class ParserUtils {
         StringBuilder builder = new StringBuilder();
 
         String result = Integer.toHexString(number);
+
+        // Prevent widening on negative numbers
+        if (result.length() >= 8) {
+            result = result.substring(2);
+        }
+
         int numberOfHexDigits = bitWidth / NIBBLE_SIZE;
         int digitsToAdd =  numberOfHexDigits - result.length();
 
