@@ -13,6 +13,7 @@ import static parser.ParserUtils.*;
  */
 public class CodeGenerator {
 
+    // TODO: ALL 'CODES' need to be updated to not include any flags
     public static final String BRANCH_IMMEDIATE_CODE = "A";
     public static final String STR_CODE_NO_FLAGS = "40";
     public static final String LDR_CODE_NO_FLAGS = "41";
@@ -117,42 +118,105 @@ public class CodeGenerator {
         writeInstruction();
     }
 
-    public void generateStr(ConditionCode conditionCode) {
+    public void generateStr(ConditionCode conditionCode, Token flags) {
         instruction.append(conditionCode);
         instruction.append(STR_CODE_NO_FLAGS);
     }
 
-    public void generateLdr(ConditionCode conditionCode) {
+    public void generateLdr(ConditionCode conditionCode, Token flags) {
+        String instructionHex = LDR_CODE_NO_FLAGS;
+
+        if (flags != null) {
+            StringBuilder binary = new StringBuilder();
+            String preIndexed = setFlag(flags, "P");
+            String addImmediate = setFlag(flags, "U");
+            String writeBack = setFlag(flags, "W");
+
+            binary.append("010").append(preIndexed)
+                    .append(addImmediate).append(0)
+                    .append(writeBack).append(1);
+
+            int decimal = Integer.parseInt(binary.toString(), 2);
+            instructionHex = toHexString(decimal, 8);
+        }
+
         instruction.append(conditionCode);
-        instruction.append(LDR_CODE_NO_FLAGS);
+        instruction.append(instructionHex);
     }
 
-    public void generateAnd(Token instruction) {
+    public void generateAnd(Token instruction, Token flags) {
         ConditionCode conditionCode = getConditionCode(instruction);
+        String instructionHex = AND_CODE;
+
+        if (flags != null) {
+            StringBuilder binary = new StringBuilder();
+            String updateProcessorFlags = setFlag(flags, "S");
+
+            binary.append("0010000")
+                    .append(updateProcessorFlags);
+
+            int decimal = Integer.parseInt(binary.toString(), 2);
+            instructionHex = toHexString(decimal, 8);
+        }
 
         this.instruction.append(conditionCode);
-        this.instruction.append(AND_CODE);
+        this.instruction.append(instructionHex);
     }
 
-    public void generateOrr(Token instruction) {
+    public void generateOrr(Token instruction, Token flags) {
         ConditionCode conditionCode = getConditionCode(instruction);
+        String instructionHex = ORR_CODE;
 
+        if (flags != null) {
+            StringBuilder binary = new StringBuilder();
+            String updateProcessorFlags = setFlag(flags, "S");
+
+            binary.append("0011100")
+                    .append(updateProcessorFlags);
+
+            int decimal = Integer.parseInt(binary.toString(), 2);
+            instructionHex = toHexString(decimal, 8);
+        }
         this.instruction.append(conditionCode);
-        this.instruction.append(ORR_CODE);
+        this.instruction.append(instructionHex);
     }
 
-    public void generateAdd(Token instruction) {
+    public void generateAdd(Token instruction, Token flags) {
         ConditionCode conditionCode = getConditionCode(instruction);
+        String instructionHex = ADD_CODE;
+
+        if (flags != null) {
+            StringBuilder binary = new StringBuilder();
+            String updateProcessorFlags = setFlag(flags, "S");
+
+            binary.append("00010100")
+                    .append(updateProcessorFlags);
+
+            int decimal = Integer.parseInt(binary.toString(), 2);
+            instructionHex = toHexString(decimal, 8);
+        }
 
         this.instruction.append(conditionCode);
-        this.instruction.append(ADD_CODE);
+        this.instruction.append(instructionHex);
     }
 
-    public void generateSub(Token instruction) {
+    public void generateSub(Token instruction, Token flags) {
         ConditionCode conditionCode = getConditionCode(instruction);
+        String instructionHex = SUB_CODE;
+
+        if (flags != null) {
+            StringBuilder binary = new StringBuilder();
+            String updateProcessorFlags = setFlag(flags, "S");
+
+            binary.append("0010010")
+                    .append(updateProcessorFlags);
+
+            int decimal = Integer.parseInt(binary.toString(), 2);
+            instructionHex = toHexString(decimal, 8);
+        }
 
         this.instruction.append(conditionCode);
-        this.instruction.append(SUB_CODE);
+        this.instruction.append(instructionHex);
     }
 
     public void generateMovt(Token instruction) {

@@ -52,20 +52,22 @@ public class Parser {
     }
 
     private void parseDataProcess(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
-        Token instruction = tokenStream.peek();
+        Token instruction = tokenStream.next();
 
         if (startsWith(instruction, "AND", "ORR", "ADD", "SUB")) {
+            Token flags = tryParseFlags(tokenStream);
+
             if (startsWith(instruction, "AND")) {
-                codeGenerator.generateAnd(instruction);
+                codeGenerator.generateAnd(instruction, flags);
             } else if (startsWith(instruction, "ORR")) {
-                codeGenerator.generateOrr(instruction);
+                codeGenerator.generateOrr(instruction, flags);
             } else if (startsWith(instruction, "ADD")) {
-                codeGenerator.generateAdd(instruction);
+                codeGenerator.generateAdd(instruction, flags);
             } else if (startsWith(instruction, "SUB")) {
-                codeGenerator.generateSub(instruction);
+                codeGenerator.generateSub(instruction, flags);
             }
 
-            parseLogicParameters(tokenStream);
+            parseLogicParameters(tokenStream, instruction);
         } else if (startsWith(instruction, "MOVW", "MOVT")) {
             if (startsWith(instruction, "MOVW")) {
                 codeGenerator.generateMovw(instruction);
@@ -73,17 +75,17 @@ public class Parser {
                 codeGenerator.generateMovt(instruction);
             }
 
-            parseMovParameters(tokenStream);
+            parseMovParameters(tokenStream, instruction);
         } else if (startsWith(instruction, "CMP")) {
             codeGenerator.generateCmp(instruction);
-            parseCmpParameters(tokenStream);
+            parseCmpParameters(tokenStream, instruction);
         } else {
             throw new SyntaxErrorException();
         }
     }
 
-    private void parseCmpParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
-        Token instruction = tokenStream.next();
+    private void parseCmpParameters(TokenStream tokenStream, Token instruction) throws EncodingException, SyntaxErrorException {
+        //Token instruction = tokenStream.next();
 
         if (isTokenType(instruction, TokenType.WORD) && endsWith(instruction, "I")) {
             Token register = tokenStream.next();
@@ -104,8 +106,8 @@ public class Parser {
         }
     }
 
-    private void parseMovParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
-        Token token = tokenStream.next();
+    private void parseMovParameters(TokenStream tokenStream, Token token) throws EncodingException, SyntaxErrorException {
+        //Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
             Token destinationRegister = tokenStream.next();
@@ -126,8 +128,8 @@ public class Parser {
         }
     }
 
-    private void parseLogicParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
-        Token token = tokenStream.next();
+    private void parseLogicParameters(TokenStream tokenStream, Token token) throws EncodingException, SyntaxErrorException {
+        //Token token = tokenStream.next();
 
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
             Token destinationRegister = tokenStream.next();
@@ -154,25 +156,36 @@ public class Parser {
     }
 
     private void parseLdrStr(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
-        Token instruction = tokenStream.peek();
+        Token instruction = tokenStream.next();
+        Token flags = tryParseFlags(tokenStream);
+
+        ConditionCode conditionCode = getConditionCode(instruction);
 
         if (startsWith(instruction, "LDR")) {
-            ConditionCode conditionCode = getConditionCode(instruction);
-            codeGenerator.generateLdr(conditionCode);
+            codeGenerator.generateLdr(conditionCode, flags);
         } else if (startsWith(instruction, "STR")) {
-            ConditionCode conditionCode = getConditionCode(instruction);
-            codeGenerator.generateStr(conditionCode);
+            codeGenerator.generateStr(conditionCode, flags);
         } else {
             throw new SyntaxErrorException();
         }
 
         // Generates the remaining part of the instruction
-        parseLdrStrParameters(tokenStream);
+        parseLdrStrParameters(tokenStream, instruction);
     }
 
-    private void parseLdrStrParameters(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
-        Token token = tokenStream.next();
+    private Token tryParseFlags(TokenStream tokenStream) {
+        Token flags = null;
+        Token flag = tokenStream.peek();
 
+        if (isTokenType(flag, TokenType.FLAG)) {
+            tokenStream.next();
+            flags = tokenStream.next();
+        }
+
+        return flags;
+    }
+
+    private void parseLdrStrParameters(TokenStream tokenStream, Token token) throws EncodingException, SyntaxErrorException {
         if (isTokenType(token, TokenType.WORD) && endsWith(token, "I")) {
             Token destinationRegister = tokenStream.next();
             Token comma = tokenStream.next();
@@ -203,17 +216,30 @@ public class Parser {
 
         if (isTokenType(branch, TokenType.WORD)) {
             if (isTokenType(branchTo, TokenType.NUMBER) || isTokenType(branchTo, TokenType.HEX_NUMBER)) {
-                codeGenerator.generateBranchImmediate(branch, branchTo);
+                if (startsWith(branch, "Bl")) {
+                    // TODO: 12/8/15  
+                } else if (startsWith(branch, "B")) {
+                    codeGenerator.generateBranchImmediate(branch, branchTo);
+                }
             } else if (isTokenType(branchTo, TokenType.WORD)) {
                 String word = branchTo.getLexeme();
                 int address = symbolTable.get(word);
-                codeGenerator.generateBranch(branch, address);
+
+                if (startsWith(branch, "Bl")) {
+                    // TODO: 12/8/15
+                } else if (startsWith(branch, "B")) {
+                    codeGenerator.generateBranch(branch, address);
+                }
             } else {
                 throw new SyntaxErrorException();
             }
         } else  {
             throw new SyntaxErrorException();
         }
+    }
+
+    private void parseBranchParameters(TokenStream tokenStream) {
+
     }
 
     private void tryParseLabel(TokenStream tokenStream) {

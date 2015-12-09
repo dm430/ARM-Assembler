@@ -71,7 +71,7 @@ public class ParserUtils {
         }
 
         int numberOfHexDigits = bitWidth / NIBBLE_SIZE;
-        int digitsToAdd =  numberOfHexDigits - result.length();
+        int digitsToAdd = numberOfHexDigits - result.length();
 
         for (int i = 0; i < digitsToAdd; i++) {
             builder.append("0");
@@ -101,6 +101,13 @@ public class ParserUtils {
         lexeme = lexeme.substring(REGISTER_PREFIX.length());
 
         return Integer.parseInt(lexeme);
+    }
+
+    public static String setFlag(Token flags, String bitFlag) {
+        boolean isSet = flags.getLexeme().toUpperCase()
+                .contains(bitFlag.toUpperCase());
+
+        return isSet ? "1" : "0";
     }
 
     public static String encodeModifiedImmediate(int immediateValue) throws EncodingException {

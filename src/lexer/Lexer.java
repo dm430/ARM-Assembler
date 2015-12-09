@@ -40,13 +40,9 @@ public class Lexer {
                 case '#':
                     readInlineComment();
                     break;
-                case '[':
+                case '-':
                     charValue = String.valueOf(input.read());
-                    tokens.add(new Token(charValue, TokenType.LEFT_BRACKET));
-                    break;
-                case ']':
-                    charValue = String.valueOf(input.read());
-                    tokens.add(new Token(charValue, TokenType.RIGHT_BRACKET));
+                    tokens.add(new Token(charValue, TokenType.FLAG));
                     break;
                 default:
                     if (Character.isLetter(currentChar)) {

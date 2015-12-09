@@ -5,9 +5,9 @@ package lexer;
  */
 public class Token {
     public enum TokenType {
-        COMMA, LEFT_PAREN, RIGHT_PAREN,
-        COLON, WORD, NUMBER, HEX_NUMBER,
-        LEFT_BRACKET, RIGHT_BRACKET
+        COMMA, COLON, WORD,
+        NUMBER, HEX_NUMBER,
+        FLAG
     }
 
     private String lexeme;
