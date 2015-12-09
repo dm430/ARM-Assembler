@@ -1,4 +1,4 @@
-package parser;
+package generator;
 
 import lexer.Token;
 import parser.exceptions.EncodingException;
@@ -11,7 +11,7 @@ import static parser.ParserUtils.*;
 /**
  * Created by devin on 11/28/15.
  */
-public class CodeGenerator {
+public class ConcreteCodeGenerator implements CodeGenerator {
 
     // TODO: ALL 'CODES' need to be updated to not include any flags
     public static final String BRANCH_IMMEDIATE_CODE = "A";
@@ -26,7 +26,8 @@ public class CodeGenerator {
     public static final String SUB_CODE = "25";
     public static final String MOV_CODE = "30";
     public static final String MOVT_CODE = "34";
-    
+    public static final String BRANCH_LINK = "B";
+
     public enum ConditionCode {
         EQUAL(""), NOT_EQUAL("1"), LESS_THAN(""),
         LESS_THAN_EQUAL(""), GRATER_THAN(""),
@@ -48,9 +49,41 @@ public class CodeGenerator {
     private int currentAddress;
     private StringBuilder instruction;
 
-    public CodeGenerator() {
+    public ConcreteCodeGenerator() {
         this.program = new ArrayList<>();
         this.instruction = new StringBuilder();
+    }
+
+    public void generateBranchLinkImmediate(Token instruction, Token branchTo) throws EncodingException {
+        ConditionCode conditionCode = getConditionCode(instruction);
+        int branchValue = startsWith(branchTo, "0x")
+                ? Integer.parseInt(branchTo.getLexeme().substring(2), 16) : Integer.parseInt(branchTo.getLexeme());
+
+        if ((31 - Integer.numberOfLeadingZeros(branchValue)) > 24) {
+            throw new EncodingException("The number " + branchTo + " does not fit into 24 bits.");
+        }
+
+        String immediateValue = toHexString(branchValue, 24);
+
+        this.instruction.append(conditionCode);
+        this.instruction.append(BRANCH_LINK);
+        this.instruction.append(immediateValue);
+
+        writeInstruction();
+    }
+
+    public void generateBranchLink(Token instruction, int address) {
+        ConditionCode conditionCode = getConditionCode(instruction);
+
+        // TODO: change -1 to value, double pass?
+        int calculatedAddress = (currentAddress > address) ? address - (currentAddress + 4) : -1;
+        String immediateValue = toHexString(calculatedAddress, 24);
+
+        this.instruction.append(conditionCode);
+        this.instruction.append(BRANCH_LINK);
+        this.instruction.append(immediateValue);
+
+        writeInstruction();
     }
 
     public void generateBranch(Token instruction, int address) {
@@ -91,6 +124,10 @@ public class CodeGenerator {
         program.add(littleEndian);
         instruction.setLength(0);
         currentAddress++;
+    }
+
+    public void generateRegistersParameters(Token destinationRegister, Token baseRegister, Token offsetRegister) {
+        // TODO: 12/9/15
     }
 
     public void generateRegistersImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {

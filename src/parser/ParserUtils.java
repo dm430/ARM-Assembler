@@ -3,7 +3,7 @@ package parser;
 import lexer.Token;
 import lexer.Token.TokenType;
 
-import parser.CodeGenerator.ConditionCode;
+import generator.ConcreteCodeGenerator.ConditionCode;
 import parser.exceptions.EncodingException;
 
 /**

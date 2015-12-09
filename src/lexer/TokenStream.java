@@ -46,4 +46,8 @@ public class TokenStream {
             index -= numberToReverseBy;
         }
     }
+
+    public void reset() {
+        index = 0;
+    }
 }

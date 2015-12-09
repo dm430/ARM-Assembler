@@ -20,7 +20,10 @@ public class Driver {
             Parser parser = new Parser();
             Lexer lexer = new Lexer(new File("/home/devin/test.txt"));
             TokenStream tokenStream = lexer.tokenize();
+
+            parser.buildSymbolTable(tokenStream);
             byte[] program = parser.parse(tokenStream);
+
             writeFile("/home/devin/RPI/test.img", program);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
