@@ -3,6 +3,7 @@ package parser;
 import generator.CodeGenerator;
 import generator.ConcreteCodeGenerator;
 import generator.DryrunCodeGenerator;
+import jdk.nashorn.internal.objects.annotations.Where;
 import lexer.Token;
 import lexer.TokenStream;
 import lexer.Token.TokenType;
@@ -60,6 +61,53 @@ public class Parser {
             parseDataProcess(tokenStream);
         } else if (startsWith(token, "LDR", "STR")) {
             parseLdrStr(tokenStream);
+        } else if (startsWith(token, "PUSH", "POP")) {
+            parsePushPop(tokenStream);
+        } else {
+            throw new SyntaxErrorException();
+        }
+    }
+
+    private void parsePushPop(TokenStream tokenStream) throws SyntaxErrorException {
+        Token instruction = tokenStream.next();
+
+        // Accept no variations
+        if (tokenEquals(instruction, "PUSH")) {
+
+        } else if (tokenEquals(instruction, "POP")) {
+
+        } else {
+            throw new SyntaxErrorException();
+        }
+
+        parsePushPopParameters(tokenStream);
+    }
+
+    private void parsePushPopParameters(TokenStream tokenStream) throws SyntaxErrorException {
+        Token token = tokenStream.next();
+        Token register = tokenStream.next();
+
+        if (isTokenType(token, TokenType.OPEN_BRACKET)
+                && isTokenType(register, TokenType.WORD) && startsWith(register, "R")) {
+            Token commaOrBracket = tokenStream.next();
+
+            while (isTokenType(commaOrBracket, TokenType.COMMA)) {
+                register = tokenStream.next();
+
+                if (isTokenType(register, TokenType.WORD) && startsWith(register, "R")) {
+
+                } else {
+                    throw new SyntaxErrorException();
+                }
+
+                commaOrBracket = tokenStream.next();
+            }
+
+            if (isTokenType(commaOrBracket, TokenType.CLOSE_BRACKET)) {
+                // TODO: Generate
+            } else {
+                throw new SyntaxErrorException();
+            }
         } else {
             throw new SyntaxErrorException();
         }

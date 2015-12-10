@@ -110,6 +110,10 @@ public class ParserUtils {
         return isSet ? "1" : "0";
     }
 
+    public static boolean tokenEquals(Token instruction, String value) {
+        return value.equalsIgnoreCase(instruction.getLexeme());
+    }
+
     public static String encodeModifiedImmediate(int immediateValue) throws EncodingException {
         String encodedValue = new String();
         boolean notCalculated = true;

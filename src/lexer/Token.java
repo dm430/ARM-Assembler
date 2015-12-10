@@ -7,7 +7,7 @@ public class Token {
     public enum TokenType {
         COMMA, COLON, WORD,
         NUMBER, HEX_NUMBER,
-        FLAG
+        OPEN_BRACKET, CLOSE_BRACKET, FLAG
     }
 
     private String lexeme;
