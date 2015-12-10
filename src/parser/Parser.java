@@ -3,7 +3,6 @@ package parser;
 import generator.CodeGenerator;
 import generator.ConcreteCodeGenerator;
 import generator.DryrunCodeGenerator;
-import jdk.nashorn.internal.objects.annotations.Where;
 import lexer.Token;
 import lexer.TokenStream;
 import lexer.Token.TokenType;
@@ -80,10 +79,11 @@ public class Parser {
             throw new SyntaxErrorException();
         }
 
-        parsePushPopParameters(tokenStream);
+
+        parsePushPopListParameters(tokenStream);
     }
 
-    private void parsePushPopParameters(TokenStream tokenStream) throws SyntaxErrorException {
+    private void parsePushPopListParameters(TokenStream tokenStream) throws SyntaxErrorException {
         Token token = tokenStream.next();
         Token register = tokenStream.next();
 
@@ -131,6 +131,8 @@ public class Parser {
 
             if (endsWith(instruction, "i")) {
                 parseLogicImmediateParameters(tokenStream);
+            } else {
+                throw new SyntaxErrorException();
             }
         } else if (startsWith(instruction, "MOVW", "MOVT")) {
             if (startsWith(instruction, "MOVW")) {
@@ -141,12 +143,16 @@ public class Parser {
 
             if (endsWith(instruction, "i")) {
                 parseMovImmediateParameters(tokenStream);
+            } else {
+                throw new SyntaxErrorException();
             }
         } else if (startsWith(instruction, "CMP")) {
             codeGenerator.generateCmp(instruction);
 
             if (endsWith(instruction, "i")) {
                 parseCmpImmediateParameters(tokenStream);
+            } else {
+                throw new SyntaxErrorException();
             }
         } else {
             throw new SyntaxErrorException();
