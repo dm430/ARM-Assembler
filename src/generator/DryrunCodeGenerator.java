@@ -38,53 +38,53 @@ public class DryrunCodeGenerator implements CodeGenerator {
     }
 
     @Override
-    public void generateRegistersImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {
+    public void generateLdrStrImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {
         programAdress++;
     }
 
     @Override
     public void generateStr(ConcreteCodeGenerator.ConditionCode conditionCode, Token flags) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateLdr(ConcreteCodeGenerator.ConditionCode conditionCode, Token flags) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateAnd(Token instruction, Token flags) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateOrr(Token instruction, Token flags) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateAdd(Token instruction, Token flags) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateSub(Token instruction, Token flags) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateMovt(Token instruction) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateMovw(Token instruction) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
     public void generateCmp(Token instruction) {
-        programAdress++;
+        // Do nothing
     }
 
     @Override
@@ -100,6 +100,31 @@ public class DryrunCodeGenerator implements CodeGenerator {
     @Override
     public void generateLogicImmediate12BitsParameters(Token destinationRegister, Token operandRegister, Token offset) throws EncodingException {
         programAdress++;
+    }
+
+    @Override
+    public void generateMovRegistersParameters(Token destinationRegister, Token sourceRegister) throws EncodingException {
+        programAdress++;
+    }
+
+    @Override
+    public void generatePushPopParameters(List<Token> registerList) {
+        programAdress++;
+    }
+
+    @Override
+    public void generatePush(Token instruction) {
+        // Do nothing
+    }
+
+    @Override
+    public void generatePop(Token instruction) {
+        // Do nothing
+    }
+
+    @Override
+    public void generateMovwR(Token instruction) {
+        // Do nothing
     }
 
     @Override

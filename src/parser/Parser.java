@@ -10,7 +10,9 @@ import parser.exceptions.EncodingException;
 import parser.exceptions.SyntaxErrorException;
 import generator.ConcreteCodeGenerator.ConditionCode;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static parser.ParserUtils.*;
@@ -72,9 +74,9 @@ public class Parser {
 
         // Accept no variations
         if (tokenEquals(instruction, "PUSH")) {
-
+            codeGenerator.generatePush(instruction);
         } else if (tokenEquals(instruction, "POP")) {
-
+            codeGenerator.generatePop(instruction);
         } else {
             throw new SyntaxErrorException();
         }
@@ -90,12 +92,14 @@ public class Parser {
         if (isTokenType(token, TokenType.OPEN_BRACKET)
                 && isTokenType(register, TokenType.WORD) && startsWith(register, "R")) {
             Token commaOrBracket = tokenStream.next();
+            List<Token> registerList = new ArrayList<>();
+            registerList.add(register);
 
             while (isTokenType(commaOrBracket, TokenType.COMMA)) {
                 register = tokenStream.next();
 
                 if (isTokenType(register, TokenType.WORD) && startsWith(register, "R")) {
-
+                    registerList.add(register);
                 } else {
                     throw new SyntaxErrorException();
                 }
@@ -104,7 +108,7 @@ public class Parser {
             }
 
             if (isTokenType(commaOrBracket, TokenType.CLOSE_BRACKET)) {
-                // TODO: Generate
+                codeGenerator.generatePushPopParameters(registerList);
             } else {
                 throw new SyntaxErrorException();
             }
@@ -135,14 +139,23 @@ public class Parser {
                 throw new SyntaxErrorException();
             }
         } else if (startsWith(instruction, "MOVW", "MOVT")) {
-            if (startsWith(instruction, "MOVW")) {
-                codeGenerator.generateMovw(instruction);
-            } else if (startsWith(instruction, "MOVT")) {
-                codeGenerator.generateMovt(instruction);
-            }
+            if (tokenEquals(instruction, "MOVT")) {
 
-            if (endsWith(instruction, "i")) {
+                codeGenerator.generateMovt(instruction);
                 parseMovImmediateParameters(tokenStream);
+
+            } else if (startsWith(instruction, "MOVW")) {
+
+                if (endsWith(instruction, "i")) {
+                    codeGenerator.generateMovw(instruction);
+                    parseMovImmediateParameters(tokenStream);
+                } else if (endsWith(instruction, "r")) {
+                    codeGenerator.generateMovwR(instruction);
+                    parseMovRegisterParameters(tokenStream);
+                } else {
+                    throw new SyntaxErrorException();
+                }
+
             } else {
                 throw new SyntaxErrorException();
             }
@@ -154,6 +167,22 @@ public class Parser {
             } else {
                 throw new SyntaxErrorException();
             }
+        } else {
+            throw new SyntaxErrorException();
+        }
+    }
+
+    private void parseMovRegisterParameters(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
+        Token destinationRegister = tokenStream.next();
+        Token comma = tokenStream.next();
+        Token sourceRegister = tokenStream.next();
+
+        if (isTokenType(destinationRegister, TokenType.WORD)
+                && startsWith(destinationRegister, "R")
+                && isTokenType(comma, TokenType.COMMA)
+                && isTokenType(sourceRegister, TokenType.WORD)
+                && startsWith(sourceRegister, "R")) {
+            codeGenerator.generateMovRegistersParameters(destinationRegister, sourceRegister);
         } else {
             throw new SyntaxErrorException();
         }
@@ -286,7 +315,7 @@ public class Parser {
                 && isTokenType(comma2, TokenType.COMMA)
                 && (isTokenType(offset, TokenType.NUMBER)
                 || isTokenType(offset, TokenType.HEX_NUMBER))) {
-            codeGenerator.generateRegistersImmediate12BitsParameters(destinationRegister, baseRegister, offset);
+            codeGenerator.generateLdrStrImmediate12BitsParameters(destinationRegister, baseRegister, offset);
         } else {
             throw new SyntaxErrorException();
         }
@@ -330,7 +359,9 @@ public class Parser {
 
         if (label.getTokenType() == Token.TokenType.WORD
                 && colon.getTokenType() == Token.TokenType.COLON) {
-            symbolTable.put(label.getLexeme(), codeGenerator.getCurrentAddress());
+            if (!symbolTable.containsKey(label.getLexeme())) {
+                symbolTable.put(label.getLexeme(), codeGenerator.getCurrentAddress());
+            }
         } else {
             tokenStream.reverseStream(2);
         }

@@ -21,7 +21,7 @@ public interface CodeGenerator {
 
     void generateRegistersParameters(Token destinationRegister, Token baseRegister, Token offsetRegister);
 
-    void generateRegistersImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException;
+    void generateLdrStrImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException;
 
     void generateStr(ConditionCode conditionCode, Token flags);
 
@@ -46,6 +46,16 @@ public interface CodeGenerator {
     void generateCmpParametersImmediate(Token register, Token value) throws EncodingException;
 
     void generateLogicImmediate12BitsParameters(Token destinationRegister, Token operandRegister, Token offset) throws EncodingException;
+
+    void generateMovRegistersParameters(Token destinationRegister, Token sourceRegister) throws EncodingException;
+
+    void generatePushPopParameters(List<Token> registerList);
+
+    void generatePush(Token instruction);
+
+    void generatePop(Token instruction);
+
+    void generateMovwR(Token instruction);
 
     int getCurrentAddress();
 

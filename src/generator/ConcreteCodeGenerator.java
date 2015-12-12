@@ -27,6 +27,10 @@ public class ConcreteCodeGenerator implements CodeGenerator {
     public static final String MOV_CODE = "30";
     public static final String MOVT_CODE = "34";
     public static final String BRANCH_LINK = "B";
+    public static final String PUSH = "92D";
+    public static final String POP = "8BD";
+    public static final String MOVW_R = "1B0";
+
 
     public enum ConditionCode {
         EQUAL(""), NOT_EQUAL("1"), LESS_THAN(""),
@@ -74,9 +78,8 @@ public class ConcreteCodeGenerator implements CodeGenerator {
 
     public void generateBranchLink(Token instruction, int address) {
         ConditionCode conditionCode = getConditionCode(instruction);
-
-        // TODO: change -1 to value, double pass?
-        int calculatedAddress = (currentAddress > address) ? address - (currentAddress + 4) : -1;
+        
+        int calculatedAddress = address - (currentAddress + 2);
         String immediateValue = toHexString(calculatedAddress, 24);
 
         this.instruction.append(conditionCode);
@@ -89,8 +92,7 @@ public class ConcreteCodeGenerator implements CodeGenerator {
     public void generateBranch(Token instruction, int address) {
         ConditionCode conditionCode = getConditionCode(instruction);
 
-        // TODO: change -1 to value, double pass?
-        int calculatedAddress = (currentAddress > address) ? address - (currentAddress + 2) : -1;
+        int calculatedAddress = address - (currentAddress + 2);
         String immediateValue = toHexString(calculatedAddress, 24);
 
         this.instruction.append(conditionCode);
@@ -130,7 +132,7 @@ public class ConcreteCodeGenerator implements CodeGenerator {
         // TODO: 12/9/15
     }
 
-    public void generateRegistersImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {
+    public void generateLdrStrImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {
         int base = getRegisterNumber(baseRegister);
         int destination = getRegisterNumber(destinationRegister);
         int baseOffset = (startsWith(offset, "0x"))
@@ -339,6 +341,58 @@ public class ConcreteCodeGenerator implements CodeGenerator {
         instruction.append(encodedValue);
 
         writeInstruction();
+    }
+
+    @Override
+    public void generateMovRegistersParameters(Token destinationRegister, Token sourceRegister) throws EncodingException {
+        int destReg = getRegisterNumber(destinationRegister);
+        int sourceReg = getRegisterNumber(sourceRegister);
+
+        if (destReg > MAX_REGISTERS) {
+            throw new EncodingException(destReg + " is not a valid register number");
+        }
+
+        if (sourceReg > MAX_REGISTERS) {
+            throw new EncodingException(sourceReg + " is not a valid register number");
+        }
+
+        int decimal = Integer.parseInt("00000000", 2);
+
+        instruction.append(toHexString(destReg, 4));
+        instruction.append(toHexString(decimal, 8));
+        instruction.append(toHexString(sourceReg, 4));
+
+        writeInstruction();
+    }
+
+    @Override
+    public void generatePushPopParameters(List<Token> registerList) {
+        // TODO: 12/10/15
+    }
+
+    @Override
+    public void generatePush(Token instruction) {
+        ConditionCode conditionCode = getConditionCode(instruction);
+
+        this.instruction.append(conditionCode);
+        this.instruction.append(PUSH);
+    }
+
+    @Override
+    public void generatePop(Token instruction) {
+        ConditionCode conditionCode = getConditionCode(instruction);
+
+        this.instruction.append(conditionCode);
+        this.instruction.append(POP);
+    }
+
+    // TODO: Eventually add flags
+    @Override
+    public void generateMovwR(Token instruction) {
+        ConditionCode conditionCode = getConditionCode(instruction);
+
+        this.instruction.append(conditionCode);
+        this.instruction.append(MOVW_R);
     }
 
     public int getCurrentAddress() {
