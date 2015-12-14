@@ -103,7 +103,7 @@ public class Lexer {
 
     private boolean isHexDigit(char value) {
         char charAsUpper = Character.toUpperCase(value);
-        return charAsUpper >= 'A' && value <= 'F';
+        return charAsUpper >= 'A' && charAsUpper <= 'F';
     }
 
     private void readInlineComment() throws IOException {

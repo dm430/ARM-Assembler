@@ -12,14 +12,14 @@ import static parser.ParserUtils.*;
  * Created by devin on 11/28/15.
  */
 public class ConcreteCodeGenerator implements CodeGenerator {
+    public static final int INSTRUCTION_SIZE = 31;
+    public static final int MAX_REGISTERS = 15;
 
     // TODO: ALL 'CODES' need to be updated to not include any flags
     public static final String BRANCH_IMMEDIATE_CODE = "A";
     public static final String STR_CODE_NO_FLAGS = "40";
     public static final String LDR_CODE_NO_FLAGS = "41";
-    public static final int INSTRUCTION_SIZE = 31;
-    public static final int MAX_REGISTERS = 15;
-    public static final String CMP_CODE = "25";
+    public static final String CMP_CODE = "35";
     public static final String ADD_CODE = "29";
     public static final String AND_CODE = "21";
     public static final String ORR_CODE = "39";
@@ -78,7 +78,7 @@ public class ConcreteCodeGenerator implements CodeGenerator {
 
     public void generateBranchLink(Token instruction, int address) {
         ConditionCode conditionCode = getConditionCode(instruction);
-        
+
         int calculatedAddress = address - (currentAddress + 2);
         String immediateValue = toHexString(calculatedAddress, 24);
 
@@ -305,7 +305,7 @@ public class ConcreteCodeGenerator implements CodeGenerator {
         int compareRegister = getRegisterNumber(register);
         int immediateValue = Integer.parseInt(value.getLexeme());
 
-        if ((INSTRUCTION_SIZE - Integer.numberOfLeadingZeros(compareRegister)) > MAX_REGISTERS) {
+        if (compareRegister > MAX_REGISTERS) {
             throw new EncodingException(compareRegister + " is not a valid register number");
         }
 
@@ -314,7 +314,7 @@ public class ConcreteCodeGenerator implements CodeGenerator {
         }
 
         instruction.append(toHexString(compareRegister, 4));
-        instruction.append(0);
+        instruction.append(toHexString(0, 4));
         instruction.append(toHexString(immediateValue, 12));
 
         writeInstruction();
