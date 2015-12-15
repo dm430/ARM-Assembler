@@ -33,9 +33,9 @@ public class ConcreteCodeGenerator implements CodeGenerator {
 
 
     public enum ConditionCode {
-        EQUAL(""), NOT_EQUAL("1"), LESS_THAN(""),
-        LESS_THAN_EQUAL(""), GRATER_THAN(""),
-        GREATER_THAN_EQUAL(""), ALWAYS("E");
+        EQUAL("0"), NOT_EQUAL("1"), LESS_THAN("B"),
+        LESS_THAN_EQUAL("D"), GRATER_THAN("C"),
+        GREATER_THAN_EQUAL("A"), ALWAYS("E");
 
         private String hexValue;
 
@@ -128,8 +128,29 @@ public class ConcreteCodeGenerator implements CodeGenerator {
         currentAddress++;
     }
 
-    public void generateRegistersParameters(Token destinationRegister, Token baseRegister, Token offsetRegister) {
-        // TODO: 12/9/15
+    public void generateRegistersParameters(Token destinationRegister, Token baseRegister, Token offsetRegister) throws EncodingException {
+        int destRegister = getRegisterNumber(destinationRegister);
+        int baseReg = getRegisterNumber(baseRegister);
+        int offsetReg = getRegisterNumber(offsetRegister);
+
+        if (destRegister > MAX_REGISTERS) {
+            throw new EncodingException(destRegister + " is not a valid register number");
+        }
+
+        if (baseReg > MAX_REGISTERS) {
+            throw new EncodingException(baseReg + " is not a valid register number");
+        }
+
+        if (offsetReg > MAX_REGISTERS) {
+            throw new EncodingException(offsetReg + " is not a valid register number");
+        }
+
+        instruction.append(toHexString(baseReg, 4));
+        instruction.append(toHexString(destRegister, 4));
+        instruction.append(toHexString(0, 8));
+        instruction.append(toHexString(offsetReg, 4));
+
+        writeInstruction();
     }
 
     public void generateLdrStrImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException {
@@ -303,7 +324,7 @@ public class ConcreteCodeGenerator implements CodeGenerator {
 
     public void generateCmpParametersImmediate(Token register, Token value) throws EncodingException {
         int compareRegister = getRegisterNumber(register);
-        int immediateValue = Integer.parseInt(value.getLexeme());
+        int immediateValue = Integer.parseInt(value.getLexeme().substring(2));
 
         if (compareRegister > MAX_REGISTERS) {
             throw new EncodingException(compareRegister + " is not a valid register number");
@@ -393,6 +414,36 @@ public class ConcreteCodeGenerator implements CodeGenerator {
 
         this.instruction.append(conditionCode);
         this.instruction.append(MOVW_R);
+    }
+
+    @Override
+    public void generateBytes(List<Token> values) {
+        StringBuilder bytes = new StringBuilder();
+
+        values.forEach(value -> bytes.append(value.getLexeme().substring(2)));
+        program.add(bytes.toString());
+    }
+
+    @Override
+    public void generateLdrb(ConditionCode conditionCode, Token flags) {
+        instruction.append(conditionCode);
+        instruction.append("7D");
+    }
+
+    @Override
+    public void generateMovwl(Token destinationRegister, int address) {
+        int absoluteAddress = 0x8000 + address * 4;
+        int destRegister = getRegisterNumber(destinationRegister);
+
+        this.instruction.append(ConditionCode.ALWAYS);
+        this.instruction.append(MOV_CODE);
+        String hexValue = toHexString(absoluteAddress, 16);
+
+        instruction.append(hexValue.subSequence(0, 1));
+        instruction.append(toHexString(destRegister, 4));
+        instruction.append(hexValue.substring(1));
+
+        writeInstruction();
     }
 
     public int getCurrentAddress() {

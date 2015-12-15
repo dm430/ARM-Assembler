@@ -128,6 +128,21 @@ public class DryrunCodeGenerator implements CodeGenerator {
     }
 
     @Override
+    public void generateBytes(List<Token> values) {
+        // TODO: 12/14/15 ?
+    }
+
+    @Override
+    public void generateLdrb(ConcreteCodeGenerator.ConditionCode conditionCode, Token flags) {
+        // do nothing
+    }
+
+    @Override
+    public void generateMovwl(Token destinationRegister, int address) {
+        programAdress++;
+    }
+
+    @Override
     public int getCurrentAddress() {
         return programAdress;
     }

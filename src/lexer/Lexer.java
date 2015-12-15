@@ -52,6 +52,10 @@ public class Lexer {
                     charValue = String.valueOf(input.read());
                     tokens.add(new Token(charValue, TokenType.CLOSE_BRACKET));
                     break;
+                case '=':
+                    charValue = String.valueOf(input.read());
+                    tokens.add(new Token(charValue, TokenType.EQUAL_SIGN));
+                    break;
                 default:
                     if (Character.isLetter(currentChar)) {
                         tokens.add(readWord());

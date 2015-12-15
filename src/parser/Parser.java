@@ -56,7 +56,9 @@ public class Parser {
     private void parseOperation(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
         Token token = tokenStream.peek();
 
-        if (startsWith(token, "B")) {
+        if (startsWith(token, "byte", "word")) {
+            parseDataStatment(tokenStream);
+        } else if (startsWith(token, "B")) {
             parseBranch(tokenStream);
         } else if (startsWith(token, "AND", "ORR", "ADD", "SUB", "CMP", "MOV")) {
             parseDataProcess(tokenStream);
@@ -66,6 +68,14 @@ public class Parser {
             parsePushPop(tokenStream);
         } else {
             throw new SyntaxErrorException();
+        }
+    }
+
+    private void parseDataStatment(TokenStream tokenStream) throws EncodingException, SyntaxErrorException {
+        Token dataStatment = tokenStream.next();
+
+        if (tokenEquals(dataStatment, "byte")) {
+            parseDataStatementParameters(tokenStream);
         }
     }
 
@@ -83,6 +93,33 @@ public class Parser {
 
 
         parsePushPopListParameters(tokenStream);
+    }
+
+    private void parseDataStatementParameters(TokenStream tokenStream) throws SyntaxErrorException, EncodingException {
+        Token assignment = tokenStream.next();
+        Token hexValue = tokenStream.next();
+
+        if (isTokenType(assignment, TokenType.EQUAL_SIGN)
+                && isTokenType(hexValue, TokenType.HEX_NUMBER)) {
+            List<Token> values = new ArrayList<>();
+            values.add(hexValue);
+
+            while (tokenStream.hasNext()
+                    && isTokenType(tokenStream.peek(), TokenType.COMMA)) {
+                tokenStream.next();
+                hexValue = tokenStream.next();
+
+                if (isTokenType(hexValue, TokenType.HEX_NUMBER)) {
+                    values.add(hexValue);
+                } else {
+                    throw new SyntaxErrorException();
+                }
+            }
+
+            codeGenerator.generateBytes(values);
+        } else {
+            throw new SyntaxErrorException();
+        }
     }
 
     private void parsePushPopListParameters(TokenStream tokenStream) throws SyntaxErrorException {
@@ -152,6 +189,8 @@ public class Parser {
                 } else if (endsWith(instruction, "r")) {
                     codeGenerator.generateMovwR(instruction);
                     parseMovRegisterParameters(tokenStream);
+                } else if (endsWith(instruction, "l")) {
+                    parseMovlParameters(tokenStream);
                 } else {
                     throw new SyntaxErrorException();
                 }
@@ -169,6 +208,27 @@ public class Parser {
             }
         } else {
             throw new SyntaxErrorException();
+        }
+    }
+
+    private void parseMovlParameters(TokenStream tokenStream) {
+        Token destinationRegister = tokenStream.next();
+        Token comma = tokenStream.next();
+        Token label = tokenStream.next();
+
+        if (isTokenType(destinationRegister, TokenType.WORD)
+                && startsWith(destinationRegister, "R")
+                && isTokenType(comma, TokenType.COMMA)
+                && isTokenType(label, TokenType.WORD)) {
+
+            int address = 0;
+            String word = label.getLexeme();
+
+            if (symbolTable.containsKey(word)) {
+                address = symbolTable.get(word);
+            }
+
+            codeGenerator.generateMovwl(destinationRegister, address);
         }
     }
 
@@ -251,7 +311,9 @@ public class Parser {
 
         ConditionCode conditionCode = getConditionCode(instruction);
 
-        if (startsWith(instruction, "LDR")) {
+        if (startsWith(instruction, "LDRB")) {
+            codeGenerator.generateLdrb(conditionCode, flags);
+        } else if (startsWith(instruction, "LDR")) {
             codeGenerator.generateLdr(conditionCode, flags);
         } else if (startsWith(instruction, "STR")) {
             codeGenerator.generateStr(conditionCode, flags);

@@ -19,7 +19,7 @@ public interface CodeGenerator {
 
     void generateBranchImmediate(Token instruction, Token branchTo) throws EncodingException;
 
-    void generateRegistersParameters(Token destinationRegister, Token baseRegister, Token offsetRegister);
+    void generateRegistersParameters(Token destinationRegister, Token baseRegister, Token offsetRegister) throws EncodingException;
 
     void generateLdrStrImmediate12BitsParameters(Token destinationRegister, Token baseRegister, Token offset) throws EncodingException;
 
@@ -56,6 +56,12 @@ public interface CodeGenerator {
     void generatePop(Token instruction);
 
     void generateMovwR(Token instruction);
+
+    void generateBytes(List<Token> values);
+
+    void generateLdrb(ConditionCode conditionCode, Token flags);
+
+    void generateMovwl(Token destinationRegister, int address);
 
     int getCurrentAddress();
 
