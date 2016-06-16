@@ -1,4 +1,7 @@
 This is a ARM assembler that has a simpler syntax than the one defined in the ARM architectural manual. This project is still 
-heavily under construction and most of the instructions are not supported yet how ever it will slowly get there. The syntax of 
+heavily under construction and most of the instructions are not supported yet how ever it will slowly get there*. The syntax of 
 the assembly language is still under heavy revision and may change from version to version. I will document the the syntax of the 
 language and its usages in this readme.
+
+*Note: This project is curently stagnant (I will work on it when I get time). There also needs to be a major refactor of the parser and lexer. 
+ There should be more front loading on the lexer to prevent string compairsions from happening in the parser.
