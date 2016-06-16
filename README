@@ -4,4 +4,4 @@ the assembly language is still under heavy revision and may change from version 
 language and its usages in this readme.
 
 *Note: This project is curently stagnant (I will work on it when I get time). There also needs to be a major refactor of the parser and lexer. 
- There should be more front loading on the lexer to prevent string compairsions from happening in the parser.
+ There should be more front loading on the lexer to prevent string comparisons from happening in the parser.
